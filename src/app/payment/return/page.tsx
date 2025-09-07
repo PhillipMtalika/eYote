@@ -5,20 +5,21 @@ import { useSearchParams } from 'next/navigation';
 
 export default function PaymentReturn() {
   const [paymentStatus, setPaymentStatus] = useState<'loading' | 'completed' | 'failed' | 'processing'>('loading');
-  const [paymentDetails, setPaymentDetails] = useState<any>(null);
+  const [paymentDetails, setPaymentDetails] = useState<{
+    depositId: string;
+    status: string;
+    requestedAmount?: string;
+    amount?: string;
+    currency?: string;
+    failureReason?: {
+      failureCode: string;
+      failureMessage: string;
+    };
+  } | null>(null);
   const [error, setError] = useState<string | null>(null);
   
   const searchParams = useSearchParams();
   const depositId = searchParams.get('depositId');
-
-  useEffect(() => {
-    if (!depositId) {
-      setError('No payment ID found');
-      return;
-    }
-
-    checkPaymentStatus();
-  }, [depositId]);
 
   const checkPaymentStatus = async () => {
     try {
@@ -44,28 +45,40 @@ export default function PaymentReturn() {
       } else {
         setError(data.error || 'Failed to check payment status');
       }
-    } catch (error) {
+    } catch {
       setError('Network error while checking payment status');
     }
   };
 
-  const openWhatsApp = (deposit: any) => {
+  useEffect(() => {
+    if (!depositId) {
+      setError('No payment ID found');
+      return;
+    }
+
+    checkPaymentStatus();
+  }, [depositId]);
+
+  const openWhatsApp = (deposit: {
+    depositId: string;
+    requestedAmount?: string;
+    amount?: string;
+    currency?: string;
+  }) => {
     const amount = deposit.requestedAmount || deposit.amount || 'N/A';
     const currency = deposit.currency || 'CDF';
     const depositId = deposit.depositId;
-    const timestamp = new Date().toLocaleString();
+    const orderId = `eYote-${depositId.substring(0, 8)}`;
+    const total = `${amount}${currency}`;
     
-    const message = `PAID ✅
+    // WhatsApp number for eYote agent (replace with your actual WhatsApp number)
+    const whatsappNumber = '243901234567'; // DRC WhatsApp number format
     
-Amount: ${amount} ${currency}
-Payment ID: ${depositId}
-Date: ${timestamp}
-Status: COMPLETED
+    // Structured message that agent can parse: PAID {order_id} {depositId} {total}
+    const message = `PAID ${orderId} ${depositId} ${total}`;
 
-Payment processed successfully via eYote Payment System.`;
-
-    // Create WhatsApp deep link
-    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+    // Create WhatsApp deep link with specific number and parseable message
+    const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
     
     // Open WhatsApp
     window.open(whatsappUrl, '_blank');

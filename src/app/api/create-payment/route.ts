@@ -2,12 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {
-    const { depositId, returnUrl, reason } = await request.json();
+    const { depositId, reason, country } = await request.json();
 
     // Validate required fields
-    if (!depositId || !returnUrl || !reason) {
+    if (!depositId || !reason) {
       return NextResponse.json(
-        { error: 'Missing required fields: depositId, returnUrl, reason' },
+        { error: 'Missing required fields: depositId, reason' },
         { status: 400 }
       );
     }
@@ -22,18 +22,25 @@ export async function POST(request: NextRequest) {
     }
 
     // Create payment page request using PawaPay v2 API format (with DRC as default country)
+    // For development, we'll use a placeholder URL that PawaPay accepts
+    // In production, replace with your actual domain
+    const baseUrl = process.env.NODE_ENV === 'production' 
+      ? 'https://yourdomain.com' 
+      : 'https://merchant.com'; // Placeholder for development
+
+    // Create payment page request using PawaPay v2 API format
     const paymentPageRequest = {
       depositId: depositId,
-      returnUrl: `https://merchant.com/paymentProcessed?depositId=${depositId}`,
+      returnUrl: `${baseUrl}/paymentProcessed?depositId=${depositId}`,
       reason: reason,
-      country: "COD"  // Set DRC as default country
+      country: country || "COD"  // Use provided country or default to DRC
     };
 
-    // Call PawaPay v2 Payment Page API directly
+    // Call PawaPay v2 Payment Page API
     const pawaPayResponse = await fetch('https://api.sandbox.pawapay.io/v2/paymentpage', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${apiToken}`,
+        Authorization: `Bearer ${apiToken}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(paymentPageRequest),
@@ -42,12 +49,12 @@ export async function POST(request: NextRequest) {
     if (!pawaPayResponse.ok) {
       const errorData = await pawaPayResponse.json().catch(() => ({}));
       console.error('PawaPay API error:', errorData);
-      
+
       return NextResponse.json(
-        { 
+        {
           error: errorData.message || `PawaPay API error: ${pawaPayResponse.status}`,
           success: false,
-          retryable: pawaPayResponse.status >= 500
+          retryable: pawaPayResponse.status >= 500,
         },
         { status: pawaPayResponse.status }
       );
@@ -60,17 +67,16 @@ export async function POST(request: NextRequest) {
       success: true,
       depositId: depositId,
       redirectUrl: pawaPayData.redirectUrl,
-      message: 'Payment page created successfully'
+      message: 'Payment page created successfully',
     });
-
   } catch (error) {
     console.error('Create payment API error:', error);
-    
+
     return NextResponse.json(
-      { 
+      {
         error: error instanceof Error ? error.message : 'Failed to create payment page',
         success: false,
-        retryable: true
+        retryable: true,
       },
       { status: 500 }
     );

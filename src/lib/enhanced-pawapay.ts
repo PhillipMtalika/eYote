@@ -17,7 +17,7 @@ export interface PaymentSession {
   createdAt: Date;
   expiresAt: Date;
   redirectUrl?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export class EnhancedPawaPayService {
@@ -159,6 +159,7 @@ export class EnhancedPawaPayService {
     secret: string
   ): boolean {
     try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const crypto = require('crypto');
       const expectedSignature = crypto
         .createHmac('sha256', secret)
@@ -169,8 +170,8 @@ export class EnhancedPawaPayService {
         Buffer.from(signature),
         Buffer.from(expectedSignature)
       );
-    } catch (error) {
-      console.error('Webhook signature verification failed:', error);
+    } catch {
+      console.error('Webhook signature verification failed');
       return false;
     }
   }
@@ -179,7 +180,7 @@ export class EnhancedPawaPayService {
    * Process webhook callback
    */
   static async processWebhook(
-    payload: any,
+    payload: Record<string, unknown>,
     signature?: string
   ): Promise<{
     success: boolean;
@@ -206,7 +207,8 @@ export class EnhancedPawaPayService {
       }
 
       // Process the webhook payload
-      const { depositId, status } = payload;
+      const depositId = payload.depositId as string;
+      const status = payload.status as string;
       
       if (!depositId || !status) {
         return {
@@ -240,7 +242,7 @@ export class EnhancedPawaPayService {
     requestFn: () => Promise<T>,
     maxRetries: number
   ): Promise<T> {
-    let lastError: any;
+    let lastError: unknown;
 
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       try {
@@ -270,11 +272,11 @@ export class EnhancedPawaPayService {
   /**
    * Enhanced error handling
    */
-  private static handleError(error: any): PawaPayError {
+  private static handleError(error: unknown): PawaPayError {
     if (axios.isAxiosError(error)) {
       const axiosError = error as AxiosError;
       const status = axiosError.response?.status;
-      const data = axiosError.response?.data as any;
+      const data = axiosError.response?.data as Record<string, unknown>;
 
       // Handle specific PawaPay error responses
       if (data?.failureReason) {

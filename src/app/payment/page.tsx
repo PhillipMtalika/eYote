@@ -1,9 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import PaymentForm from '@/components/PaymentForm';
-import PaymentSuccess from '@/components/PaymentSuccess';
 import { PaymentFormData, PaymentState } from '@/types/payment';
+import PaymentForm from '@/components/PaymentForm';
 
 export default function PaymentPage() {
   const [paymentState, setPaymentState] = useState<PaymentState>({
@@ -41,10 +40,10 @@ export default function PaymentPage() {
           isLoading: false,
           isSuccess: false,
           isError: true,
-          errorMessage: data.error || 'Payment page creation failed. Please try again.',
+          errorMessage: 'Failed to process payment. Please try again.'
         });
       }
-    } catch (error) {
+    } catch {
       setPaymentState({
         isLoading: false,
         isSuccess: false,

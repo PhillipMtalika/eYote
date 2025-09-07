@@ -24,8 +24,8 @@ export default function PaymentSuccess({ depositId, onNewPayment }: PaymentSucce
         } else {
           setError(data.error || 'Failed to get deposit status');
         }
-      } catch (err) {
-        setError('Failed to check deposit status');
+      } catch {
+        console.error('Error opening WhatsApp');
       } finally {
         setLoading(false);
       }

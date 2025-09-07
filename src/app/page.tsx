@@ -37,7 +37,7 @@ export default function Home() {
         alert(data.error || 'Failed to create payment session');
         setIsLoading(false);
       }
-    } catch (error) {
+    } catch {
       alert('Network error. Please try again.');
       setIsLoading(false);
     }
@@ -53,7 +53,7 @@ export default function Home() {
           </h1>
           <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
             Secure, fast, and reliable mobile money payments in the Democratic Republic of Congo. 
-            Powered by PawaPay's trusted payment infrastructure.
+            Powered by PawaPay&apos;s trusted payment infrastructure.
           </p>
           
           {/* DRC Flag Badge */}
@@ -98,8 +98,8 @@ export default function Home() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
               </svg>
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Secure</h3>
-            <p className="text-gray-600">Bank-level security with end-to-end encryption for all transactions.</p>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">Secure &amp; Trusted</h3>
+            <p className="text-gray-600">Bank-grade security with PCI compliance ensures your money and data are always protected.</p>
           </div>
 
           <div className="bg-white rounded-lg shadow-md p-6 text-center">
@@ -119,7 +119,7 @@ export default function Home() {
               </svg>
             </div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">Trusted</h3>
-            <p className="text-gray-600">Powered by PawaPay's reliable mobile money infrastructure.</p>
+            <p className="text-gray-600">Powered by PawaPay&apos;s reliable mobile money infrastructure.</p>
           </div>
         </div>
 
@@ -160,7 +160,7 @@ export default function Home() {
             <div className="text-center">
               <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-white font-bold text-xl">2</div>
               <h3 className="text-lg font-semibold mb-2">Enter Details</h3>
-              <p className="text-gray-600">You'll be redirected to PawaPay's secure payment page to enter your details</p>
+              <p className="text-gray-600">You&apos;ll be redirected to PawaPay&apos;s secure payment page to enter your details</p>
             </div>
             <div className="text-center">
               <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-white font-bold text-xl">3</div>

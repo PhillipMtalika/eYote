@@ -59,7 +59,7 @@ export default function PaymentSuccessPage() {
               <div className="text-red-500 text-4xl mb-4">❌</div>
               <h2 className="text-xl font-semibold text-gray-900 mb-2">Payment Not Found</h2>
               <p className="text-gray-600 mb-4">
-                We couldn't find your payment information. This might happen if you navigated here directly.
+                We couldn&apos;t find your payment information. This might happen if you navigated here directly.
               </p>
               <Link
                 href="/payment"
