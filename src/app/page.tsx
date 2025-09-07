@@ -17,7 +17,7 @@ export default function Home() {
         },
         body: JSON.stringify({
           depositId: crypto.randomUUID(),
-          reason: 'eYote Payment - DRC',
+          reason: 'eYote Payment ',
           country: 'COD',
           amount: '30000', // 30,000 CDF (about $12 USD)
           phoneNumber: '243830123456' // Valid DRC phone number format (243 + 9 digits)
@@ -58,17 +58,7 @@ export default function Home() {
           </p>
           
           {/* DRC Flag Badge */}
-          <div className="flex items-center justify-center mb-8">
-            <div className="flex items-center p-4 bg-white rounded-lg shadow-md">
-              <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-yellow-400 rounded-full flex items-center justify-center mr-4">
-                <span className="text-white font-bold text-lg">🇨🇩</span>
-              </div>
-              <div className="text-left">
-                <div className="font-semibold text-gray-900">Democratic Republic of Congo</div>
-                <div className="text-sm text-gray-600">Congolese Franc (CDF)</div>
-              </div>
-            </div>
-          </div>
+          
 
           <button
             onClick={handlePayNow}
