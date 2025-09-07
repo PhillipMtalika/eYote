@@ -1,9 +1,28 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
+  const [orderId, setOrderId] = useState<string | null>(null);
+  const [totalAmount, setTotalAmount] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const order = searchParams.get('order');
+    const total = searchParams.get('total');
+
+    if (order && total) {
+      setOrderId(order);
+      setTotalAmount(total);
+      setError(null);
+    } else {
+      setError('Order ID or total amount is missing from the URL.');
+    }
+  }, [searchParams]);
 
   const handlePayNow = async () => {
     setIsLoading(true);
@@ -17,9 +36,10 @@ export default function Home() {
         },
         body: JSON.stringify({
           depositId: crypto.randomUUID(),
-          reason: 'eYote Payment ',
+          orderId: orderId,
+          reason: `Payment for ${orderId}`,
           country: 'COD',
-          amount: '30000', // 30,000 CDF (about $12 USD)
+          amount: totalAmount,
          
         }),
       });
@@ -56,9 +76,25 @@ export default function Home() {
             Secure, fast, and reliable mobile money payments in the Democratic Republic of Congo. 
             Powered by PawaPay&apos;s trusted payment infrastructure.
           </p>
-          
-          {/* DRC Flag Badge */}
-          
+
+          {error ? (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative max-w-md mx-auto mb-6" role="alert">
+              <strong className="font-bold">Error:</strong>
+              <span className="block sm:inline"> {error}</span>
+            </div>
+          ) : orderId && totalAmount ? (
+            <div className="bg-white rounded-lg shadow-lg p-6 max-w-md mx-auto mb-8 border border-gray-200">
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">Order Summary</h2>
+              <div className="flex justify-between items-center text-lg mb-2">
+                <span className="text-gray-600">Order ID:</span>
+                <span className="font-mono text-gray-900">{orderId}</span>
+              </div>
+              <div className="flex justify-between items-center text-xl font-bold">
+                <span className="text-gray-600">Total Amount:</span>
+                <span className="text-blue-600">{new Intl.NumberFormat('en-US').format(Number(totalAmount))} CDF</span>
+              </div>
+            </div>
+          ) : null}
 
           <button
             onClick={handlePayNow}
