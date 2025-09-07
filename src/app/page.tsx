@@ -20,7 +20,7 @@ export default function Home() {
           reason: 'eYote Payment ',
           country: 'COD',
           amount: '30000', // 30,000 CDF (about $12 USD)
-          phoneNumber: '243830123456' // Valid DRC phone number format (243 + 9 digits)
+         
         }),
       });
 

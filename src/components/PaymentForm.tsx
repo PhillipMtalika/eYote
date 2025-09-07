@@ -13,7 +13,6 @@ interface PaymentFormProps {
 export default function PaymentForm({ onPaymentSubmit, paymentState }: PaymentFormProps) {
   const [formData, setFormData] = useState<PaymentFormData>({
     amount: 0,
-    phoneNumber: '',
     country: '',
     currency: '',
     description: '',
@@ -73,17 +72,6 @@ export default function PaymentForm({ onPaymentSubmit, paymentState }: PaymentFo
       } else {
         setPaymentLimits(null);
       }
-    } else if (name === 'phoneNumber') {
-      // Validate phone number in real-time
-      const validation = EnhancedPawaPayService.validatePhoneNumber(value, formData.country);
-      if (!validation.isValid && value.length > 5) {
-        setValidationErrors(prev => ({ ...prev, phoneNumber: validation.error || 'Invalid phone number' }));
-      }
-      
-      setFormData(prev => ({
-        ...prev,
-        [name]: value,
-      }));
     } else if (name === 'amount') {
       const numValue = parseFloat(value) || 0;
       
@@ -129,15 +117,7 @@ export default function PaymentForm({ onPaymentSubmit, paymentState }: PaymentFo
       }
     }
     
-    // Phone number validation
-    if (!formData.phoneNumber.trim()) {
-      errors.phoneNumber = 'Phone number is required';
-    } else {
-      const validation = EnhancedPawaPayService.validatePhoneNumber(formData.phoneNumber, formData.country);
-      if (!validation.isValid) {
-        errors.phoneNumber = validation.error || 'Invalid phone number';
-      }
-    }
+
     
     // Country validation
     if (!formData.country) {
@@ -155,7 +135,6 @@ export default function PaymentForm({ onPaymentSubmit, paymentState }: PaymentFo
     
     const isValid = Object.keys(errors).length === 0 &&
                    formData.amount > 0 && 
-                   formData.phoneNumber.trim() !== '' && 
                    formData.country !== '' && 
                    formData.currency !== '' && 
                    formData.description.trim() !== '';
@@ -210,32 +189,6 @@ export default function PaymentForm({ onPaymentSubmit, paymentState }: PaymentFo
           )}
           {validationErrors.amount && (
             <p className="text-xs text-red-600 mt-1">{validationErrors.amount}</p>
-          )}
-        </div>
-
-        {/* Phone Number Input */}
-        <div>
-          <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 mb-1">
-            Phone Number
-          </label>
-          <input
-            type="tel"
-            id="phoneNumber"
-            name="phoneNumber"
-            value={formData.phoneNumber}
-            onChange={handleInputChange}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:border-transparent ${
-              validationErrors.phoneNumber 
-                ? 'border-red-300 focus:ring-red-500' 
-                : 'border-gray-300 focus:ring-blue-500'
-            }`}
-            placeholder="+256701234567"
-            required
-          />
-          {!validationErrors.phoneNumber ? (
-            <p className="text-xs text-gray-500 mt-1">Include country code (e.g., +256 for Uganda)</p>
-          ) : (
-            <p className="text-xs text-red-600 mt-1">{validationErrors.phoneNumber}</p>
           )}
         </div>
 

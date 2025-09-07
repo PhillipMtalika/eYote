@@ -59,7 +59,6 @@ export interface Country {
 // UI Types
 export interface PaymentFormData {
   amount: number;
-  phoneNumber: string;
   country: string;
   currency: string;
   description: string;
