@@ -22,16 +22,29 @@ export async function POST(request: NextRequest) {
     }
 
     // Create payment page request using PawaPay v2 API format (with DRC as default country)
-    // For development, we'll use a placeholder URL that PawaPay accepts
-    // In production, replace with your actual domain
-    const baseUrl = process.env.NODE_ENV === 'production' 
-      ? 'https://yourdomain.com' 
-      : 'https://merchant.com'; // Placeholder for development
-
-    // Create payment page request using PawaPay v2 API format
+    // LOCALHOST FOCUS: Simple solution for local development
+    const host = request.headers.get('host');
+    const isLocalhost = !host || host.includes('localhost') || host.includes('127.0.0.1');
+    
+    let returnUrl;
+    if (isLocalhost) {
+      // For localhost: PawaPay requires HTTPS, so use a redirect service
+      // This will redirect back to your localhost after payment
+      returnUrl = `https://httpbin.org/redirect-to?url=http://localhost:3000/payment/return?depositId=${depositId}`;
+      
+      console.log(`\n🔧 LOCALHOST DEV MODE:`);
+      console.log(`✅ Payment created with depositId: ${depositId}`);
+      console.log(`🔗 After payment, PawaPay will redirect through httpbin to:`);
+      console.log(`📱 http://localhost:3000/payment/return?depositId=${depositId}`);
+      console.log(`\n`);
+    } else {
+      // Production: Use actual domain
+      returnUrl = `https://${host}/payment/return?depositId=${depositId}`;
+    }
+    
     const paymentPageRequest = {
       depositId: depositId,
-      returnUrl: `${baseUrl}/paymentProcessed?depositId=${depositId}`,
+      returnUrl: returnUrl,
       reason: reason,
       country: country || "COD"  // Use provided country or default to DRC
     };

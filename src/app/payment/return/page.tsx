@@ -23,19 +23,21 @@ function PaymentReturnContent() {
 
   const checkPaymentStatus = async () => {
     try {
-      const response = await fetch(`/api/payments?depositId=${depositId}`);
+      // Call PawaPay API directly to check deposit status
+      const response = await fetch(`/api/check-payment-status?depositId=${depositId}`);
       const data = await response.json();
 
-      if (data.success && data.deposit) {
-        setPaymentDetails(data.deposit);
+      if (data.success) {
+        const deposit = data.deposit;
+        setPaymentDetails(deposit);
         
-        if (data.deposit.status === 'COMPLETED') {
+        if (deposit.status === 'COMPLETED') {
           setPaymentStatus('completed');
           // Auto-open WhatsApp after 2 seconds
           setTimeout(() => {
-            openWhatsApp(data.deposit);
+            openWhatsApp(deposit);
           }, 2000);
-        } else if (data.deposit.status === 'FAILED') {
+        } else if (deposit.status === 'FAILED') {
           setPaymentStatus('failed');
         } else {
           setPaymentStatus('processing');
