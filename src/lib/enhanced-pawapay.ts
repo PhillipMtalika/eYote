@@ -280,10 +280,14 @@ export class EnhancedPawaPayService {
 
       // Handle specific PawaPay error responses
       if (data?.failureReason) {
+        const failureReason = data.failureReason as {
+          failureCode?: string;
+          failureMessage?: string;
+        };
         return {
-          code: data.failureReason.failureCode || 'PAWAPAY_ERROR',
-          message: data.failureReason.failureMessage || 'Payment processing failed',
-          retryable: this.isRetryableError(data.failureReason.failureCode),
+          code: failureReason.failureCode || 'PAWAPAY_ERROR',
+          message: failureReason.failureMessage || 'Payment processing failed',
+          retryable: this.isRetryableError(failureReason.failureCode || ''),
           statusCode: status,
         };
       }
@@ -319,7 +323,7 @@ export class EnhancedPawaPayService {
     // Generic error
     return {
       code: 'UNKNOWN_ERROR',
-      message: error.message || 'An unexpected error occurred',
+      message: error instanceof Error ? error.message : 'An unexpected error occurred',
       retryable: false,
     };
   }

@@ -53,13 +53,7 @@ export default function PaymentPage() {
     }
   };
 
-  const handleNewPayment = () => {
-    setPaymentState({
-      isLoading: false,
-      isSuccess: false,
-      isError: false,
-    });
-  };
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">

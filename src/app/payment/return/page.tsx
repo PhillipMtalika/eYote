@@ -57,6 +57,7 @@ export default function PaymentReturn() {
     }
 
     checkPaymentStatus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [depositId]);
 
   const openWhatsApp = (deposit: {
