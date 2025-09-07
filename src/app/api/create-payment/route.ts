@@ -2,12 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {
-    const { depositId, reason, country, amount } = await request.json();
+    const { depositId, orderId, reason, country, amount } = await request.json();
 
     // Validate required fields
-    if (!depositId || !reason || !amount) {
+    if (!depositId || !orderId || !reason || !amount) {
       return NextResponse.json(
-        { error: 'Missing required fields: depositId, reason, amount' },
+        { error: 'Missing required fields: depositId, orderId, reason, amount' },
         { status: 400 }
       );
     }
@@ -21,26 +21,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create payment page request using PawaPay v2 API format (with DRC as default country)
-    // LOCALHOST FOCUS: Simple solution for local development
+    // Determine the base URL for the returnUrl
     const host = request.headers.get('host');
-    const isLocalhost = !host || host.includes('localhost') || host.includes('127.0.0.1');
-    
-    let returnUrl;
-    if (isLocalhost) {
-      // For localhost: PawaPay requires HTTPS, so use a redirect service
-      // This will redirect back to your localhost after payment
-      returnUrl = `https://httpbin.org/redirect-to?url=http://localhost:3000/payment/return?depositId=${depositId}`;
-      
-      console.log(`\n🔧 LOCALHOST DEV MODE:`);
-      console.log(`✅ Payment created with depositId: ${depositId}`);
-      console.log(`🔗 After payment, PawaPay will redirect through httpbin to:`);
-      console.log(`📱 http://localhost:3000/payment/return?depositId=${depositId}`);
-      console.log(`\n`);
-    } else {
-      // Production: Use actual domain
-      returnUrl = `https://${host}/payment/return?depositId=${depositId}`;
-    }
+    const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
+    const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : `${protocol}://${host}`;
+    const returnUrl = `${baseUrl}/payment/return?depositId=${depositId}`;
+
+    console.log(`🔧 Constructed returnUrl: ${returnUrl}`);
     
     console.log(`💰 Amount: ${amount}`);
     
@@ -53,7 +40,7 @@ export async function POST(request: NextRequest) {
       country: country || "COD",
       reason: reason,
       metadata: [
-        {"fieldName": "orderId", "fieldValue": depositId.substring(0, 8)}
+        {"fieldName": "orderId", "fieldValue": orderId}
       ]
     };
 
