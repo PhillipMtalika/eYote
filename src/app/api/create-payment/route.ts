@@ -2,12 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {
-    const { depositId, reason, country } = await request.json();
+    const { depositId, reason, country, amount, phoneNumber } = await request.json();
 
     // Validate required fields
-    if (!depositId || !reason) {
+    if (!depositId || !reason || !amount || !phoneNumber) {
       return NextResponse.json(
-        { error: 'Missing required fields: depositId, reason' },
+        { error: 'Missing required fields: depositId, reason, amount, phoneNumber' },
         { status: 400 }
       );
     }
@@ -42,15 +42,52 @@ export async function POST(request: NextRequest) {
       returnUrl = `https://${host}/payment/return?depositId=${depositId}`;
     }
     
+    // Format phone number to ensure it's valid DRC format (243 + 9 digits)
+    let formattedPhone = phoneNumber.toString().replace(/\D/g, ''); // Remove non-digits
+    
+    // Handle different input formats
+    if (formattedPhone.startsWith('243')) {
+      // Already has country code
+      formattedPhone = formattedPhone;
+    } else if (formattedPhone.startsWith('0')) {
+      // Remove leading 0 and add country code
+      formattedPhone = '243' + formattedPhone.substring(1);
+    } else {
+      // Add country code
+      formattedPhone = '243' + formattedPhone;
+    }
+    
+    // Validate DRC phone number format (should be 12 digits: 243 + 9 digits)
+    if (!/^243\d{9}$/.test(formattedPhone)) {
+      return NextResponse.json(
+        { error: `Invalid DRC phone number format. Expected: 243XXXXXXXXX, got: ${formattedPhone}` },
+        { status: 400 }
+      );
+    }
+    
+    console.log(`📱 Original phoneNumber: ${phoneNumber}`);
+    console.log(`📱 Formatted phone: ${formattedPhone}`);
+    console.log(`💰 Amount: ${amount}`);
+    
     const paymentPageRequest = {
       depositId: depositId,
       returnUrl: returnUrl,
+      statementDescription: `eYote ${depositId.substring(0, 8)}`,
+      amount: amount.toString(), // Amount from frontend as string
+      msisdn: formattedPhone, // Properly formatted DRC phone number
+      language: "FR",
+      country: country || "COD",
       reason: reason,
-      country: country || "COD"  // Use provided country or default to DRC
+      metadata: [
+        {"fieldName": "orderId", "fieldValue": depositId.substring(0, 8)},
+        {"fieldName": "customerId", "fieldValue": formattedPhone, "isPII": true}
+      ]
     };
 
-    // Call PawaPay v2 Payment Page API
-    const pawaPayResponse = await fetch('https://api.sandbox.pawapay.io/v2/paymentpage', {
+    console.log(`🔧 PawaPay payload:`, JSON.stringify(paymentPageRequest, null, 2));
+
+    // Call PawaPay v1 Widget Sessions API (as per your specification)
+    const pawaPayResponse = await fetch('https://api.sandbox.pawapay.io/v1/widget/sessions', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${apiToken}`,

@@ -17,12 +17,24 @@ function PaymentReturnContent() {
     };
   } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [pollCount, setPollCount] = useState(0);
+  const [timeoutReached, setTimeoutReached] = useState(false);
   
   const searchParams = useSearchParams();
   const depositId = searchParams.get('depositId');
 
+  // Maximum polling attempts (90 seconds / 4 seconds = ~22 attempts)
+  const MAX_POLL_ATTEMPTS = 22;
+
   const checkPaymentStatus = async () => {
     try {
+      // Check if we've exceeded maximum polling attempts (90 seconds timeout)
+      if (pollCount >= MAX_POLL_ATTEMPTS) {
+        setTimeoutReached(true);
+        setError('Payment verification timed out. Please check your payment status manually or contact support.');
+        return;
+      }
+
       // Call PawaPay API directly to check deposit status
       const response = await fetch(`/api/check-payment-status?depositId=${depositId}`);
       const data = await response.json();
@@ -39,10 +51,15 @@ function PaymentReturnContent() {
           }, 2000);
         } else if (deposit.status === 'FAILED') {
           setPaymentStatus('failed');
-        } else {
+        } else if (deposit.status === 'PENDING') {
           setPaymentStatus('processing');
-          // Keep checking status every 3 seconds if still processing
-          setTimeout(checkPaymentStatus, 3000);
+          setPollCount(prev => prev + 1);
+          // Keep checking status every 4 seconds if still processing (as per your spec)
+          setTimeout(checkPaymentStatus, 4000);
+        } else {
+          // Unknown status - treat as failed
+          setPaymentStatus('failed');
+          setError(`Unknown payment status: ${deposit.status}`);
         }
       } else {
         setError(data.error || 'Failed to check payment status');
@@ -77,11 +94,13 @@ function PaymentReturnContent() {
     // WhatsApp number for eYote agent (replace with your actual WhatsApp number)
     const whatsappNumber = '243901234567'; // DRC WhatsApp number format
     
-    // Structured message that agent can parse: PAID {order_id} {depositId} {total}
+    // Exact format as specified: PAID {order_id} {depositId} {total}
     const message = `PAID ${orderId} ${depositId} ${total}`;
 
-    // Create WhatsApp deep link with specific number and parseable message
+    // Create WhatsApp deep link - user just needs to tap "Send"
     const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+    
+    console.log(`📱 Opening WhatsApp with message: ${message}`);
     
     // Open WhatsApp
     window.open(whatsappUrl, '_blank');
