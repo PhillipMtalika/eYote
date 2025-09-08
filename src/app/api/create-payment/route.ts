@@ -22,9 +22,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Determine the base URL for the returnUrl
-    const host = request.headers.get('host');
-    const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
-    const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : `${protocol}://${host}`;
+    const baseUrl = 'https://payment.eyote.net';
     const returnUrl = `${baseUrl}/payment/return?depositId=${depositId}`;
 
     console.log(`🔧 Constructed returnUrl: ${returnUrl}`);
